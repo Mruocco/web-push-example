@@ -47,8 +47,33 @@ body {
 }
 
 .btn:disabled {
-  background: #777;
-  color: #000;
+  background: #999;
+  color: #222;
+}
+
+.btn-loading::after {
+  content: '';
+  display: block;
+  margin: 10px auto;
+  width: 25px;
+  height: 25px;
+  background: #111;
+  animation-name: loading;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes loading {
+  0% {
+    transform: 0;
+  }
+  50% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(90deg);
+  }
 }
 
 .notify-btn {

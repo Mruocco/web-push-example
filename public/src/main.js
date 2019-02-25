@@ -32,13 +32,14 @@ function sendPush() {
 subscriptionButton.addEventListener('click', subscribe);
 
 function subscribe() {
+  subscriptionButton.classList.add('btn-loading');
   navigator.serviceWorker.ready
-    .then(async (registration) => {
-      // get vapid key from server
-      const res = await fetch('vapidKey');
-      const vapidPublicKey = await res.text();
-      const Uint8ArrayVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-
+  .then(async (registration) => {
+    // get vapid key from server
+    const res = await fetch('vapidKey');
+    const vapidPublicKey = await res.text();
+    const Uint8ArrayVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+    
       return registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: Uint8ArrayVapidKey
@@ -46,6 +47,7 @@ function subscribe() {
     }).then(subscription => {
       subscriptionButton.setAttribute('disabled', true);
       console.log('Subscribed', subscription.endpoint);
+      subscriptionButton.classList.remove('btn-loading');
       return fetch('register', {
           method: 'post',
           headers: {
@@ -57,7 +59,10 @@ function subscribe() {
         })
         .then(res => res.text())
         .then(res => console.log(res));
-    }).catch(err => console.error(err));
+    }).catch(err => {
+      console.error(err);
+      subscriptionButton.classList.remove('btn-loading');
+    });
 }
 
 unsubscribeButton.addEventListener('click', unsubscribe);
@@ -68,6 +73,7 @@ function unsubscribe() {
     .then(subscription => subscription.unsubscribe()
       .then(() => {
         subscriptionButton.removeAttribute('disabled');
+        subscriptionButton.classList.remove('btn-loading');
         return fetch('unsubscribe', {
             method: 'post',
             headers: {
