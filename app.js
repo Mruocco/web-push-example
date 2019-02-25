@@ -5,6 +5,10 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
 
+const redirectToHTTPS = require('express-http-to-https').redirectToHTTPS
+
+app.use(redirectToHTTPS([/localhost:(\d{4})/], [], 301));
+
 // lowdb is a small single file database
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');

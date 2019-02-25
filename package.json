@@ -19,6 +19,7 @@
   "dependencies": {
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
+    "express-http-to-https": "^1.1.4",
     "lowdb": "^1.0.0",
     "web-push": "^3.3.3"
   }
