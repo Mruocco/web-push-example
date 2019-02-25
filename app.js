@@ -5,10 +5,11 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
 
+
 app.enable('trust proxy');
 
 app.use((req, res, next) => {
-  if (req.secure) {
+  if (req.secure || req.headers.host === `localhost:${port}`) {
     // request was via https, so do no special handling
     next();
   } else {
