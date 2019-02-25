@@ -10,16 +10,23 @@ self.addEventListener('push', async (event) => {
   });
 });
 
+
+
 self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
-    console.log(self.clients)
-  )
-})
+    self.clients.matchAll().then((clientList) => {
+      return self.clients.openWindow('https://jakubemfoto.pl');
+    })
+  );
+});
+
 
 self.addEventListener('pushsubscriptionchange', (event) => {
   console.log('Subscription expired');
   event.waitUntil(
-    self.registration.pushManager.subscribe({ userVisibleOnly: true })
+    self.registration.pushManager.subscribe({
+      userVisibleOnly: true
+    })
     .then((subscription) => {
       console.log('Subscribed after expiration', subscription.endpoint);
       return fetch('register', {
