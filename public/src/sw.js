@@ -6,16 +6,20 @@ const getPayload = async () => {
 self.addEventListener('push', async (event) => {
   const payload = await getPayload()
   self.registration.showNotification(payload.title, {
-    body: payload.body
+    body: payload.body,
+    icon: '/images/icons/app-icon.svg',
+    vibrate: [500, 100, 500],
   });
 });
-
-
 
 self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll().then((clientList) => {
-      return self.clients.openWindow('https://jakubemfoto.pl');
+      event.notification.close();
+      if (clientList.length > 0) {
+        return clientList[0].focus();
+      }
+      return self.clients.openWindow('/');
     })
   );
 });
