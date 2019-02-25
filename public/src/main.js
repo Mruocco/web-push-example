@@ -4,7 +4,10 @@ const subscriptionStatus = document.querySelector('.subscription-status');
 const unsubscribeButton = document.querySelector('.unsubscribe-btn');
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
+  // Use the window load event to keep the page load performant
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
 }
 
 navigator.serviceWorker.ready
