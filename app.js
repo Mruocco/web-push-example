@@ -49,6 +49,12 @@ webpush.setVapidDetails(
 app.use(express.static('./public/src'));
 app.use(bodyParser.json());
 
+app.use(function(request, response){
+  if(!request.secure){
+    response.redirect("https://" + request.headers.host + request.url);
+  }
+});
+
 // serve main html page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname + '/public/src/index.html'));
