@@ -5,6 +5,18 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
 
+app.enable('trust proxy');
+
+app.use((req, res, next) => {
+  if (req.secure) {
+    // request was via https, so do no special handling
+    next();
+  } else {
+    // request was via http, so redirect to https
+    res.redirect('https://' + req.headers.host + req.url);
+  }
+});
+
 // lowdb is a small single file database
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -14,7 +26,7 @@ const adapter = new FileSync('db.json');
 const db = low(adapter);
 
 // set default field for user subscriptions and some data
-db.defaults({ 
+db.defaults({
   payload: {
     "title": "hello there",
     "body": "push body from server"
@@ -40,7 +52,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 // set domain and vapid keys from process.env
 webpush.setVapidDetails(
-  'http://localhost:5500',
+  'https://localhost:5500',
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
@@ -48,12 +60,6 @@ webpush.setVapidDetails(
 // serve public folder as static files
 app.use(express.static('./public/src'));
 app.use(bodyParser.json());
-
-app.use(function(request, response){
-  if(!request.secure){
-    response.redirect("https://" + request.headers.host + request.url);
-  }
-});
 
 // serve main html page
 app.get('/', (req, res) => {
@@ -68,16 +74,16 @@ app.get('/vapidKey', (req, res) => {
 // function for sending notification
 function sendNotification(subscription) {
   webpush.sendNotification(subscription)
-  .then((res) => {
-    console.log('ok');
-  })
-  .catch((err) => {
-    if (err.statusCode === 410) {
-      console.error('removing subscription: ', err);
-      db.unset(`subs["${subscription.endpoint}"]`).value();
-      db.write();
-    }
-  });
+    .then((res) => {
+      console.log('ok');
+    })
+    .catch((err) => {
+      if (err.statusCode === 410) {
+        console.error('removing subscription: ', err);
+        db.unset(`subs["${subscription.endpoint}"]`).value();
+        db.write();
+      }
+    });
 }
 
 app.post('/register', (req, res) => {
