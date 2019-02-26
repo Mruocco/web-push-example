@@ -1,19 +1,16 @@
 const express = require('express');
 const app = express();
-const port = 5500;
 const path = require('path');
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
 
-
 app.enable('trust proxy');
 
+// redirection from http to https
 app.use((req, res, next) => {
-  if (req.secure || req.headers.host === `localhost:${port}`) {
-    // request was via https, so do no special handling
+  if (req.secure || req.headers.host === `localhost:${PORT}`) {
     next();
   } else {
-    // request was via http, so redirect to https
     res.redirect('https://' + req.headers.host + req.url);
   }
 });
@@ -37,10 +34,16 @@ db.defaults({
 
 // read .env file
 require('dotenv').config();
+
+// remember to set port and domain in your .env file
+const PORT = process.env.PORT;
+const DOMAIN = process.env.DOMAIN;
+
 // check if vapid keys were set
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-  const vapidKeys = webpush.generateVAPIDKeys();
+  // if not, generate keys and log them in the console
   // vapid keys should be generated only once
+  const vapidKeys = webpush.generateVAPIDKeys();
   function formatVapid() {
     return `
     VAPID_PUBLIC_KEY=${vapidKeys.publicKey}
@@ -53,7 +56,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 // set domain and vapid keys from process.env
 webpush.setVapidDetails(
-  'https://localhost:5500',
+  'http://' + DOMAIN + PORT,
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
@@ -75,12 +78,9 @@ app.get('/vapidKey', (req, res) => {
 // function for sending notification
 function sendNotification(subscription) {
   webpush.sendNotification(subscription)
-    .then((res) => {
-      console.log('ok');
-    })
     .catch((err) => {
       if (err.statusCode === 410) {
-        console.error('removing subscription: ', err);
+        console.error('removing sub')
         db.unset(`subs["${subscription.endpoint}"]`).value();
         db.write();
       }
@@ -116,10 +116,9 @@ app.get('/payload', (req, res) => {
 
 app.post('/unsubscribe', (req, res) => {
   const sub = req.body;
-  console.log(sub);
   db.unset(`subs["${sub.endpoint}"]`).value();
   db.write();
   res.send('ok, get I it');
 });
 
-app.listen(port, () => console.log(`listening on ${port}`))
+app.listen(PORT, () => console.log(`listening on ${PORT}`))
