@@ -46,9 +46,17 @@ body {
   background: #a0fc8d;
 }
 
+.notify-btn {
+  background: #60c5ff;
+}
+
 .btn:disabled {
   background: #999;
   color: #222;
+}
+
+.unsubscribe-btn {
+  background: #f55;
 }
 
 .btn-loading::after {
@@ -74,10 +82,6 @@ body {
   100% {
     transform: rotate(90deg);
   }
-}
-
-.notify-btn {
-  background: #f47940;
 }
 
 .main-headline {

@@ -36,8 +36,8 @@ db.defaults({
 require('dotenv').config();
 
 // remember to set port and domain in your .env file
-const PORT = process.env.PORT;
-const DOMAIN = process.env.DOMAIN;
+const PORT = process.env.PORT || 5500;
+const DOMAIN = process.env.DOMAIN || 'localhost:';
 
 // check if vapid keys were set
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
