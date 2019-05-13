@@ -8,11 +8,13 @@ app.enable('trust proxy');
 
 // redirection from http to https
 app.use((req, res, next) => {
-  if (req.secure || req.headers.host === `localhost:${PORT}`) {
+
+  next();
+/*  if (req.secure || req.headers.host === `localhost:${PORT}`) {
     next();
   } else {
-    res.redirect('https://' + req.headers.host + req.url);
-  }
+    res.redirect('http://' + req.headers.host + req.url);
+  }*/
 });
 
 // lowdb is a small single file database
@@ -26,8 +28,12 @@ const db = low(adapter);
 // set default field for user subscriptions and some data
 db.defaults({
   payload: {
-    "title": "hello there",
-    "body": "push body from server"
+    "title": "TESTEST",
+    "icon": "https://image.flaticon.com/icons/svg/222/222401.svg",
+    "image": "https://ssl.cdn-redfin.com/system_files/media/141111_JPG/genLdpUgcMediaBrowserUrl/item_2.jpg",
+    "badge": "https://cdn3.iconfinder.com/data/icons/pyconic-icons-1-2/512/badge-512.png"
+  //  "vibrate": "<Array of Integers>",
+//    "sound": "<URL String>",
   },
   subs: {}
 }).write();
@@ -56,7 +62,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 // set domain and vapid keys from process.env
 webpush.setVapidDetails(
-  'https://' + DOMAIN,
+  'http://' + DOMAIN,
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
@@ -77,6 +83,7 @@ app.get('/vapidKey', (req, res) => {
 
 // function for sending notification
 function sendNotification(subscription) {
+  console.log(subscription);
   webpush.sendNotification(subscription)
     .catch((err) => {
       if (err.statusCode === 410) {
@@ -101,6 +108,7 @@ app.post('/notify', (req, res) => {
   const users = db.get('subs').value();
   if (users) {
     Object.values(users).forEach((el) => {
+      console.log(el);
       sendNotification(el);
     })
   }
