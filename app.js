@@ -56,7 +56,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 // set domain and vapid keys from process.env
 webpush.setVapidDetails(
-  'http://' + DOMAIN + PORT,
+  'http://' + DOMAIN,
   process.env.VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
