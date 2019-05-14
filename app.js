@@ -28,10 +28,14 @@ const db = low(adapter);
 // set default field for user subscriptions and some data
 db.defaults({
   payload: {
-    "title": "TESTEST",
-    "icon": "https://image.flaticon.com/icons/svg/222/222401.svg",
-    "image": "https://ssl.cdn-redfin.com/system_files/media/141111_JPG/genLdpUgcMediaBrowserUrl/item_2.jpg",
-    "badge": "https://cdn3.iconfinder.com/data/icons/pyconic-icons-1-2/512/badge-512.png"
+    "tag": "testtag",
+    "data": {
+      "url": "https://sendforce.co/listing/1/1453865"
+    },
+    "title": "Hot new Listing at 123 main st.",
+    "icon": "/images/icons/letter-m.png",
+    "image": "https://img.sendforce.co/unsafe/500x300/https://imgserver.sendforce.co/1/1453865/0",
+    "badge": "/images/icons/letter-m.png"
   //  "vibrate": "<Array of Integers>",
 //    "sound": "<URL String>",
   },

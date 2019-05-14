@@ -6,12 +6,13 @@ const getPayload = async () => {
 self.addEventListener('push', async (event) => {
   console.log('received');
   const payload = await getPayload()
-  console.log(payload);
 
   self.registration.showNotification(payload.title, {
     body: payload.body,
     icon: payload.icon,
-    image: payload.mage,
+    image: payload.image,
+    tag: payload.tag
+    data: payload.data,
     vibrate: [500, 100, 500],
   });
 });
