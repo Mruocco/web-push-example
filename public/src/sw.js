@@ -4,20 +4,22 @@ const getPayload = async () => {
 }
 
 self.addEventListener('push', async (event) => {
-  console.log('received');
+  console.log(event);
   const payload = await getPayload()
-
+  console.log(payload);
   self.registration.showNotification(payload.title, {
     body: payload.body,
     icon: payload.icon,
     image: payload.image,
-    tag: payload.tag
+    tag: payload.tag,
     data: payload.data,
     vibrate: [500, 100, 500],
   });
 });
 
 self.addEventListener('notificationclick', (event) => {
+  console.log('clickyclicky');
+  console.log(event);
   event.waitUntil(
     self.clients.matchAll().then((clientList) => {
       event.notification.close();

@@ -3,6 +3,7 @@ const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
+const cors = require('cors');
 
 app.enable('trust proxy');
 
@@ -16,6 +17,9 @@ app.use((req, res, next) => {
     res.redirect('http://' + req.headers.host + req.url);
   }*/
 });
+
+app.use(cors());
+
 
 // lowdb is a small single file database
 const low = require('lowdb');
@@ -46,7 +50,7 @@ db.defaults({
 require('dotenv').config();
 
 // remember to set port and domain in your .env file
-const PORT = process.env.PORT || 5500;
+const PORT = process.env.PORT || 5501;
 const DOMAIN = process.env.DOMAIN || 'localhost:';
 
 // check if vapid keys were set
@@ -87,8 +91,9 @@ app.get('/vapidKey', (req, res) => {
 
 // function for sending notification
 function sendNotification(subscription) {
+  console.log('wewewe');
   console.log(subscription);
-  webpush.sendNotification(subscription)
+  webpush.sendNotification(subscription, 'someId')
     .catch((err) => {
       if (err.statusCode === 410) {
         console.error('removing sub')
@@ -112,7 +117,7 @@ app.post('/notify', (req, res) => {
   const users = db.get('subs').value();
   if (users) {
     Object.values(users).forEach((el) => {
-      console.log(el);
+      console.log('wawa', el);
       sendNotification(el);
     })
   }
