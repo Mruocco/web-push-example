@@ -91,9 +91,8 @@ app.get('/vapidKey', (req, res) => {
 
 // function for sending notification
 function sendNotification(subscription) {
-  console.log('wewewe');
-  console.log(subscription);
-  webpush.sendNotification(subscription, 'someId')
+  console.log('wewewe', subscription);
+  webpush.sendNotification(subscription, {'someId': 'ok'})
     .catch((err) => {
       if (err.statusCode === 410) {
         console.error('removing sub')
@@ -104,16 +103,17 @@ function sendNotification(subscription) {
 }
 
 app.post('/register', (req, res) => {
-  const sub = req.body.subscription;
+  const sub = req.body;
   // put user subscription into database
   db.set(`subs["${sub.endpoint}"]`, sub).value();
   db.write();
   // send confirmation to client
-  res.send("registered");
+  res.json({'registered':true});
 });
 
 // this route is only for demo purposes, in real life situation notification would be triggered by some kind of server-side event
 app.post('/notify', (req, res) => {
+  console.log('watwat');
   const users = db.get('subs').value();
   if (users) {
     Object.values(users).forEach((el) => {
@@ -121,7 +121,7 @@ app.post('/notify', (req, res) => {
       sendNotification(el);
     })
   }
-  res.send("notified");
+  res.json({'success': true});
 });
 
 
