@@ -1,141 +1,46 @@
 const express = require('express');
-const app = express();
-const path = require('path');
-const bodyParser = require('body-parser');
 const webpush = require('web-push');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
-app.enable('trust proxy');
+VAPID_PUBLIC='BLNpZn9zBkhjm_mWlXnQY1R_bqdSOz3Oia4ObnGiA-Bbar9_G_GmZbNoQ-Jr1O-YjS4yQI-JfIHUfxrbo4nz25Q';
+VAPID_PRIVATE='ZWLCuQdkTEe4F4-RwLdAuMtGoRoe4afz0rqvIuy7M4o';
 
-// redirection from http to https
-app.use((req, res, next) => {
 
-  next();
-/*  if (req.secure || req.headers.host === `localhost:${PORT}`) {
-    next();
-  } else {
-    res.redirect('http://' + req.headers.host + req.url);
-  }*/
-});
+const fakeDatabase = [];
+
+const app = express();
 
 app.use(cors());
-
-
-// lowdb is a small single file database
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
-
-// create database file and open new database
-const adapter = new FileSync('db.json');
-const db = low(adapter);
-
-// set default field for user subscriptions and some data
-db.defaults({
-  payload: {
-    "tag": "testtag",
-    "data": {
-      "url": "https://sendforce.co/listing/1/1453865"
-    },
-    "title": "Hot new Listing at 123 main st.",
-    "icon": "/images/icons/letter-m.png",
-    "image": "https://img.sendforce.co/unsafe/500x300/https://imgserver.sendforce.co/1/1453865/0",
-    "badge": "/images/icons/letter-m.png"
-  //  "vibrate": "<Array of Integers>",
-//    "sound": "<URL String>",
-  },
-  subs: {}
-}).write();
-
-// read .env file
-require('dotenv').config();
-
-// remember to set port and domain in your .env file
-const PORT = process.env.PORT || 5501;
-const DOMAIN = process.env.DOMAIN || 'localhost:';
-
-// check if vapid keys were set
-if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-  // if not, generate keys and log them in the console
-  // vapid keys should be generated only once
-  const vapidKeys = webpush.generateVAPIDKeys();
-  function formatVapid() {
-    return `
-    VAPID_PUBLIC_KEY=${vapidKeys.publicKey}
-    VAPID_PRIVATE_KEY=${vapidKeys.privateKey}
-    `
-  }
-  console.log('update your .env file with following VAPID keys: ', formatVapid());
-  return
-}
-
-// set domain and vapid keys from process.env
-webpush.setVapidDetails(
-  'http://' + DOMAIN,
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
-
-// serve public folder as static files
-app.use(express.static('./public/src'));
 app.use(bodyParser.json());
 
-// serve main html page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname + '/public/src/index.html'));
+webpush.setVapidDetails('mailto:you@domain.com', VAPID_PUBLIC, VAPID_PRIVATE);
+
+app.post('/subscription', (req, res) => {
+  const subscription = req.body;
+  fakeDatabase.push(subscription);
 });
 
-// route to get public vapid key
-app.get('/vapidKey', (req, res) => {
-  res.send(process.env.VAPID_PUBLIC_KEY);
-});
+app.post('/sendNotification', (req, res) => {
+  const notificationPayload = {
+    notification: {
+      title: 'New Notification',
+      body: 'This is the body of the notification',
+      icon: 'assets/icons/icon-512x512.png'
+    }
+  };
 
-// function for sending notification
-function sendNotification(subscription) {
-  console.log('wewewe', subscription);
-  webpush.sendNotification(subscription, {'someId': 'ok'})
-    .catch((err) => {
-      if (err.statusCode === 410) {
-        console.error('removing sub')
-        db.unset(`subs["${subscription.endpoint}"]`).value();
-        db.write();
-      }
+  const promises = [];
+  fakeDatabase.forEach(subscription => {
+    webpush.sendNotification(subscription, JSON.stringify(notificationPayload)).then((r)=>{
+      console.log(r);
+    }, (err)=>{
+      console.warn(err);
     });
-}
-
-app.post('/register', (req, res) => {
-  const sub = req.body;
-  // put user subscription into database
-  db.set(`subs["${sub.endpoint}"]`, sub).value();
-  db.write();
-  // send confirmation to client
-  res.json({'registered':true});
+  });
+  res.sendStatus(200);
 });
 
-// this route is only for demo purposes, in real life situation notification would be triggered by some kind of server-side event
-app.post('/notify', (req, res) => {
-  console.log('watwat');
-  const users = db.get('subs').value();
-  if (users) {
-    Object.values(users).forEach((el) => {
-      console.log('wawa', el);
-      sendNotification(el);
-    })
-  }
-  res.json({'success': true});
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
 });
-
-
-
-app.get('/payload', (req, res) => {
-  const payload = db.get('payload').value();
-  res.send(payload);
-});
-
-app.post('/unsubscribe', (req, res) => {
-  const sub = req.body;
-  db.unset(`subs["${sub.endpoint}"]`).value();
-  db.write();
-  res.send('ok, get I it');
-});
-
-app.listen(PORT, () => console.log(`listening on ${PORT}`))
